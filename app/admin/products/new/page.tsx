@@ -24,6 +24,7 @@ export default function NewProductPage() {
   const [colours, setColours] = useState('')
   const [sizes, setSizes] = useState('')
   const [images, setImages] = useState<File[]>([])
+  const [previews, setPreviews] = useState<string[]>([])
 
   useEffect(() => {
     fetch('/api/categories').then(r => r.json()).then(d => setCategories(d.categories ?? d)).catch(() => setError('Failed to load categories.'))
@@ -32,11 +33,12 @@ export default function NewProductPage() {
   function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? [])
     setImages(files)
+    setPreviews(files.map(f => URL.createObjectURL(f)))
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (images.length < 5) { setError('Please select at least 5 images.'); return }
+    if (images.length < 3) { setError('Please select at least 3 images.'); return }
     setError('')
     setLoading(true)
     try {
@@ -87,13 +89,24 @@ export default function NewProductPage() {
         </Field>
         <Field label="Colours (comma-separated)"><input value={colours} onChange={e => setColours(e.target.value)} placeholder="e.g. Gold,Silver,Rose Gold" className={inputCls} /></Field>
         <Field label="Sizes (comma-separated)"><input value={sizes} onChange={e => setSizes(e.target.value)} placeholder="e.g. 6,7,8,9,10" className={inputCls} /></Field>
-        <Field label="Images (minimum 5 required)">
+        <Field label="Images (minimum 3 required)">
           <input type="file" accept="image/*" multiple required onChange={handleImageChange}
             className="text-sm text-gray-300 file:mr-3 file:rounded file:border-0 file:px-3 file:py-1 file:text-xs file:font-medium" />
           {images.length > 0 && (
-            <p className={`text-xs mt-1 ${images.length < 5 ? 'text-red-400' : 'text-green-400'}`}>
-              {images.length} image{images.length !== 1 ? 's' : ''} selected {images.length < 5 ? `(need ${5 - images.length} more)` : '✓'}
+            <p className={`text-xs mt-1 ${images.length < 3 ? 'text-red-400' : 'text-green-400'}`}>
+              {images.length} image{images.length !== 1 ? 's' : ''} selected {images.length < 3 ? `(need ${3 - images.length} more)` : '✓'}
             </p>
+          )}
+          {previews.length > 0 && (
+            <div className="mt-2 grid grid-cols-4 gap-2">
+              {previews.map((url, i) => (
+                <div key={i} className="relative aspect-square rounded overflow-hidden border border-yellow-800">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                  <span className="absolute bottom-0 left-0 right-0 text-center text-xs bg-black/60 text-gray-300 py-0.5">{i + 1}</span>
+                </div>
+              ))}
+            </div>
           )}
         </Field>
 

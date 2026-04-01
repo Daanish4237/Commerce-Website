@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (imageFiles.length < 1) {
-    return NextResponse.json({ error: 'Validation error', details: ['At least 1 image is required (minimum 5 recommended)'] }, { status: 400 })
+    return NextResponse.json({ error: 'Validation error', details: ['At least 3 images are required'] }, { status: 400 })
   }
 
   try {
