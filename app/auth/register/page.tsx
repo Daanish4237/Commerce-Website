@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import OrnamentDivider from '@/components/OrnamentDivider'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -51,6 +52,7 @@ export default function RegisterPage() {
         {/* Logo */}
         <div className="flex justify-center mb-8 animate-fade-in">
           <Image src="/Soho Jewels logo.jpeg" alt="Soho Jewels" width={120} height={60} unoptimized priority className="object-contain" />
+          <OrnamentDivider size="sm" animate className="mt-2" />
         </div>
 
         <div

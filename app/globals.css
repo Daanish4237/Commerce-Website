@@ -138,3 +138,22 @@ select option {
   background-color: #111111;
   color: #e8e0d0;
 }
+
+/* Ornament glow animation */
+@keyframes ornamentGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(201, 168, 76, 0.4)) drop-shadow(0 0 8px rgba(201, 168, 76, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 6px rgba(232, 201, 122, 0.8)) drop-shadow(0 0 16px rgba(201, 168, 76, 0.5));
+  }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.ornament-glow {
+  animation: ornamentGlow 3s ease-in-out infinite;
+}

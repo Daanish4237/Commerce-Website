@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import useSWR from 'swr'
 import ProductGrid from '@/components/ProductGrid'
+import OrnamentDivider from '@/components/OrnamentDivider'
 
 export const dynamic = 'force-dynamic'
 
@@ -37,7 +38,7 @@ export default function HomePage() {
         <h1 className="text-5xl font-light tracking-[0.2em] md:text-7xl animate-slide-up gold-shimmer" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
           SOHO JEWELS
         </h1>
-        <div className="divider w-32 mx-auto" />
+        <OrnamentDivider size="lg" animate className="animate-slide-up-delay" />
         <p className="max-w-md text-sm font-light tracking-widest text-gray-400 animate-slide-up-delay uppercase">
           Timeless luxury. Crafted for those who appreciate the finest.
         </p>
@@ -57,7 +58,7 @@ export default function HomePage() {
         <h2 className="mb-2 text-3xl font-light tracking-[0.15em] uppercase" style={{ color: 'var(--gold)', fontFamily: 'Cormorant Garamond, serif' }}>
           New Arrivals
         </h2>
-        <div className="divider w-24 mb-8" />
+        <OrnamentDivider size="md" animate className="mb-8" />
 
         {isLoading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
