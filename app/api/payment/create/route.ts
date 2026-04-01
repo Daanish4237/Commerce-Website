@@ -36,15 +36,14 @@ export async function POST(req: NextRequest) {
 
   // Demo mode: if no Billplz credentials, mark order as PAID directly
   if (!process.env.BILLPLZ_API_KEY || !collectionId) {
-    await prisma.$transaction([
-      prisma.order.update({ where: { id: order.id }, data: { status: 'PAID' } }),
-      ...((await prisma.orderItem.findMany({ where: { orderId: order.id } })).map((item) =>
-        prisma.product.update({
-          where: { id: item.productId },
-          data: { stock: { decrement: item.quantity } },
-        })
-      )),
-    ])
+    const items = await prisma.orderItem.findMany({ where: { orderId: order.id } })
+    await prisma.order.update({ where: { id: order.id }, data: { status: 'PAID' } })
+    for (const item of items) {
+      await prisma.product.update({
+        where: { id: item.productId },
+        data: { stock: { decrement: item.quantity } },
+      })
+    }
     return NextResponse.json({ billUrl: `${baseUrl}/orders/success?orderId=${order.id}` })
   }
 
