@@ -32,6 +32,7 @@ export default function Navbar() {
   const [accountOpen, setAccountOpen] = useState(false)
 
   const cartCount = cartData?.items?.length ?? 0
+  const categoryList = Array.isArray(categories) ? categories : []
 
   function handleSearchChange(e: React.ChangeEvent<HTMLInputElement>) {
     const value = e.target.value
@@ -77,7 +78,7 @@ export default function Navbar() {
               >
                 All Products
               </Link>
-              {categories?.map((cat) => (
+              {categoryList.map((cat) => (
                 <Link
                   key={cat.id}
                   href={`/products?category=${encodeURIComponent(cat.id)}`}

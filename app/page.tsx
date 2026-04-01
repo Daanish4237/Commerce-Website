@@ -66,7 +66,7 @@ export default function HomePage() {
             ))}
           </div>
         ) : (
-          <ProductGrid products={newArrivals ?? []} />
+          <ProductGrid products={Array.isArray(newArrivals) ? newArrivals : []} />
         )}
       </section>
     </main>
