@@ -1,8 +1,19 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
+
+const checkoutSchema = z.object({
+  shippingName: z.string().min(1, 'Full name is required'),
+  shippingPhone: z.string().min(1, 'Phone is required'),
+  shippingAddress: z.string().min(1, 'Address is required'),
+  shippingCity: z.string().min(1, 'City is required'),
+  shippingState: z.string().min(1, 'State is required'),
+  shippingPostcode: z.string().min(1, 'Postcode is required'),
+  preferredCourier: z.string().min(1, 'Please select a courier'),
+})
 
 export async function GET() {
   let session
@@ -17,9 +28,19 @@ export async function GET() {
   return NextResponse.json(orders)
 }
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   let session
   try { session = await requireAuth() } catch (r) { return r as NextResponse }
+
+  let body: unknown
+  try { body = await req.json() } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
+  }
+
+  const parsed = checkoutSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Validation error', details: parsed.error.errors.map(e => e.message) }, { status: 400 })
+  }
 
   const cartItems = await prisma.cartItem.findMany({
     where: { userId: session.user.id },
@@ -40,6 +61,7 @@ export async function POST() {
       userId: session.user.id,
       totalPrice,
       status: 'PENDING',
+      ...parsed.data,
       items: {
         create: cartItems.map((item) => ({
           productId: item.productId,

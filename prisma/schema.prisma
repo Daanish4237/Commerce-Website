@@ -71,6 +71,14 @@ model Order {
   courierName    String?
   shippedAt      DateTime?
   deliveredAt    DateTime?
+  // Shipping address (filled by customer at checkout)
+  shippingName    String?
+  shippingPhone   String?
+  shippingAddress String?
+  shippingCity    String?
+  shippingState   String?
+  shippingPostcode String?
+  preferredCourier String?
   createdAt      DateTime    @default(now())
 
   items OrderItem[]

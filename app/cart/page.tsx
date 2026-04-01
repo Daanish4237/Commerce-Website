@@ -44,23 +44,7 @@ export default function CartPage() {
   }
 
   async function handleCheckout() {
-    setCheckingOut(true)
-    try {
-      const orderRes = await fetch('/api/orders', { method: 'POST' })
-      if (!orderRes.ok) { setCheckingOut(false); return }
-      const { orderId } = await orderRes.json()
-
-      const payRes = await fetch('/api/payment/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId }),
-      })
-      if (!payRes.ok) { setCheckingOut(false); return }
-      const { billUrl } = await payRes.json()
-      router.push(billUrl)
-    } catch {
-      setCheckingOut(false)
-    }
+    router.push('/checkout')
   }
 
   if (isLoading) return <main className="mx-auto max-w-3xl px-6 py-10 text-gray-400">Loading cart…</main>
