@@ -32,7 +32,7 @@ export default function ContactPage() {
         <div className="flex flex-col gap-8">
           {[
             { label: 'Email', value: 'sohomarketingnet@gmail.com', icon: '✉' },
-            { label: 'WhatsApp', value: '+60 XX-XXXX XXXX', icon: '📱' },
+            { label: 'WhatsApp', value: '+60 11-1633 2904', icon: '📱' },
             { label: 'Location', value: 'Kuala Lumpur, Malaysia', icon: '📍' },
             { label: 'Hours', value: 'Mon – Sat, 10am – 8pm', icon: '🕐' },
           ].map((item) => (
