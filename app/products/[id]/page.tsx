@@ -7,6 +7,7 @@ import useSWR from 'swr'
 import { useSession } from 'next-auth/react'
 import ReviewCard from '@/components/ReviewCard'
 import ReviewForm from '@/components/ReviewForm'
+import ImageSlideshow from '@/components/ImageSlideshow'
 
 interface Review {
   id: string
@@ -24,7 +25,9 @@ interface Product {
   type: string
   stock: number
   description: string
+  materialCare: string
   imageUrl: string
+  imageUrls: string
   colours: string
   sizes: string
   category: { name: string }
@@ -57,6 +60,10 @@ export default function ProductDetailPage() {
 
   const colourList = product?.colours ? product.colours.split(',').map(c => c.trim()).filter(Boolean) : []
   const sizeList = product?.sizes ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []
+  const imageList = product ? [
+    product.imageUrl,
+    ...((product.imageUrls || '').split(',').map(u => u.trim()).filter(u => u && u !== product.imageUrl))
+  ] : []
   const [selectedColour, setSelectedColour] = useState('')
   const [selectedSize, setSelectedSize] = useState('')
 
@@ -109,16 +116,9 @@ export default function ProductDetailPage() {
     <main className="mx-auto max-w-5xl px-6 py-10" style={{ color: 'white' }}>
       {/* Product section */}
       <div className="flex flex-col gap-10 md:flex-row">
-        {/* Image */}
-        <div className="relative aspect-square w-full max-w-sm flex-shrink-0 overflow-hidden rounded-lg border border-yellow-800">
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 384px"
-            priority
-          />
+        {/* Slideshow */}
+        <div className="w-full max-w-sm flex-shrink-0">
+          <ImageSlideshow images={imageList} alt={product.name} />
         </div>
 
         {/* Details */}
@@ -153,6 +153,14 @@ export default function ProductDetailPage() {
           </span>
 
           <p className="text-sm leading-relaxed text-gray-300">{product.description}</p>
+
+          {/* Material Care */}
+          {product.materialCare && (
+            <div className="rounded-lg border border-yellow-900/30 p-4" style={{ backgroundColor: 'rgba(201,168,76,0.04)' }}>
+              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--gold)' }}>Material Care</p>
+              <p className="text-sm leading-relaxed text-gray-400">{product.materialCare}</p>
+            </div>
+          )}
 
           {/* Colour variants */}
           {colourList.length > 0 && (

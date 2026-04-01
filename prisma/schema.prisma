@@ -46,7 +46,9 @@ model Product {
   price       Decimal  @db.Decimal(10, 2)
   stock       Int      @default(0)
   description String   @db.Text
+  materialCare String  @default("") @db.Text
   imageUrl    String
+  imageUrls   String   @default("")
   colours     String   @default("")
   sizes       String   @default("")
   createdAt   DateTime @default(now())

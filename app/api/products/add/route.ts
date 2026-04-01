@@ -15,9 +15,20 @@ const addProductSchema = z.object({
   price: z.coerce.number().positive('Price must be positive'),
   stock: z.coerce.number().int().min(0, 'Stock cannot be negative'),
   description: z.string().min(1, 'Description is required'),
+  materialCare: z.string().optional(),
   colours: z.string().optional(),
   sizes: z.string().optional(),
 })
+
+async function uploadToCloudinary(file: File): Promise<string> {
+  const buffer = Buffer.from(await file.arrayBuffer())
+  return new Promise<string>((resolve, reject) => {
+    cloudinary.uploader.upload_stream({ folder: 'soho-jewels' }, (err, result) => {
+      if (err || !result) return reject(err)
+      resolve(result.secure_url)
+    }).end(buffer)
+  })
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,6 +52,7 @@ export async function POST(req: NextRequest) {
     price: formData.get('price'),
     stock: formData.get('stock'),
     description: formData.get('description'),
+    materialCare: formData.get('materialCare') ?? '',
     colours: formData.get('colours') ?? '',
     sizes: formData.get('sizes') ?? '',
   }
@@ -53,33 +65,37 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  const imageFile = formData.get('image') as File | null
-  if (!imageFile) {
-    return NextResponse.json({ error: 'Validation error', details: ['Image is required'] }, { status: 400 })
+  // Get all image files (images[0], images[1], ... or image for backwards compat)
+  const imageFiles: File[] = []
+  for (let i = 0; i < 10; i++) {
+    const f = formData.get(`images[${i}]`) as File | null
+    if (f && f.size > 0) imageFiles.push(f)
+  }
+  // fallback single image
+  if (imageFiles.length === 0) {
+    const single = formData.get('image') as File | null
+    if (single && single.size > 0) imageFiles.push(single)
   }
 
-  let imageUrl: string
-  try {
-    const buffer = Buffer.from(await imageFile.arrayBuffer())
-    const uploadResult = await new Promise<{ secure_url: string }>((resolve, reject) => {
-      cloudinary.uploader.upload_stream({ folder: 'soho-jewels' }, (err, result) => {
-        if (err || !result) return reject(err)
-        resolve(result as { secure_url: string })
-      }).end(buffer)
-    })
-    imageUrl = uploadResult.secure_url
-  } catch {
-    return NextResponse.json({ error: 'Image upload failed' }, { status: 502 })
+  if (imageFiles.length < 1) {
+    return NextResponse.json({ error: 'Validation error', details: ['At least 1 image is required (minimum 5 recommended)'] }, { status: 400 })
   }
 
   try {
+    const uploadedUrls = await Promise.all(imageFiles.map(uploadToCloudinary))
+    const imageUrl = uploadedUrls[0]
+    const imageUrls = uploadedUrls.join(',')
+
     const product = await prisma.product.create({
-      data: { ...result.data, imageUrl },
+      data: { ...result.data, imageUrl, imageUrls },
     })
     return NextResponse.json(product, { status: 201 })
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
       return NextResponse.json({ error: 'Conflict', field: 'sku' }, { status: 409 })
+    }
+    if ((err as Error)?.message?.includes('upload')) {
+      return NextResponse.json({ error: 'Image upload failed' }, { status: 502 })
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

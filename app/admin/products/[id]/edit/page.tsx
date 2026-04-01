@@ -26,6 +26,7 @@ export default function EditProductPage() {
   const [price, setPrice] = useState('')
   const [stock, setStock] = useState('0')
   const [description, setDescription] = useState('')
+  const [materialCare, setMaterialCare] = useState('')
   const [colours, setColours] = useState('')
   const [sizes, setSizes] = useState('')
   const [newImage, setNewImage] = useState<File | null>(null)
@@ -43,6 +44,7 @@ export default function EditProductPage() {
         setPrice(String(product.price ?? ''))
         setStock(String(product.stock ?? 0))
         setDescription(product.description ?? '')
+        setMaterialCare(product.materialCare ?? '')
         setColours(product.colours ?? '')
         setSizes(product.sizes ?? '')
         setCategories(catData.categories ?? catData)
@@ -65,7 +67,7 @@ export default function EditProductPage() {
         imageBase64 = btoa(binary)
       }
 
-      const body: Record<string, unknown> = { id, sku, name, categoryId, type, price: Number(price), stock: Number(stock), description, colours, sizes }
+      const body: Record<string, unknown> = { id, sku, name, categoryId, type, price: Number(price), stock: Number(stock), description, materialCare, colours, sizes }
       if (imageBase64) body.imageBase64 = imageBase64
 
       const res = await fetch('/api/products/update', {
@@ -118,6 +120,11 @@ export default function EditProductPage() {
         </Field>
         <Field label="Description">
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={3} className={inputCls} />
+        </Field>
+        <Field label="Material Care">
+          <textarea value={materialCare} onChange={(e) => setMaterialCare(e.target.value)} rows={3}
+            placeholder="e.g. Avoid contact with water. Store in a dry place."
+            className={inputCls} />
         </Field>
         <Field label="Colours (comma-separated)">
           <input value={colours} onChange={(e) => setColours(e.target.value)} placeholder="e.g. Gold,Silver,Rose Gold" className={inputCls} />
