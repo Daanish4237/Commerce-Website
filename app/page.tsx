@@ -24,29 +24,40 @@ export default function HomePage() {
     <main style={{ color: 'white' }}>
       {/* Hero */}
       <section
-        className="flex flex-col items-center justify-center gap-6 px-6 py-24 text-center"
-        style={{ backgroundColor: '#111' }}
+        className="flex flex-col items-center justify-center gap-6 px-6 py-32 text-center relative overflow-hidden"
+        style={{ backgroundColor: '#080808' }}
       >
-        <h1 className="text-4xl font-bold tracking-widest md:text-6xl" style={{ color: 'var(--gold)' }}>
+        {/* Decorative background */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-5 blur-3xl"
+            style={{ backgroundColor: 'var(--gold)' }} />
+        </div>
+
+        <p className="text-xs uppercase tracking-[0.4em] text-gray-500 animate-fade-in">Est. 2024</p>
+        <h1 className="text-5xl font-light tracking-[0.2em] md:text-7xl animate-slide-up gold-shimmer" style={{ fontFamily: 'Cormorant Garamond, serif' }}>
           SOHO JEWELS
         </h1>
-        <p className="max-w-xl text-lg text-gray-300">
+        <div className="divider w-32 mx-auto" />
+        <p className="max-w-md text-sm font-light tracking-widest text-gray-400 animate-slide-up-delay uppercase">
           Timeless luxury. Crafted for those who appreciate the finest.
         </p>
         <Link
           href="/products"
-          className="mt-2 rounded border border-yellow-600 px-8 py-3 text-sm font-semibold tracking-widest transition-colors hover:bg-yellow-600 hover:text-black"
-          style={{ color: 'var(--gold)' }}
+          className="mt-4 px-10 py-3 text-xs font-semibold tracking-[0.3em] uppercase transition-all duration-300 animate-slide-up-delay-2 hover:shadow-lg"
+          style={{ border: '1px solid var(--gold)', color: 'var(--gold)', letterSpacing: '0.3em' }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--gold)'; (e.currentTarget as HTMLElement).style.color = '#0A0A0A'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--gold)'; }}
         >
-          SHOP NOW
+          Explore Collection
         </Link>
       </section>
 
       {/* New Arrivals */}
       <section className="mx-auto max-w-7xl px-6 py-14">
-        <h2 className="mb-8 text-2xl font-bold tracking-wide" style={{ color: 'var(--gold)' }}>
+        <h2 className="mb-2 text-3xl font-light tracking-[0.15em] uppercase" style={{ color: 'var(--gold)', fontFamily: 'Cormorant Garamond, serif' }}>
           New Arrivals
         </h2>
+        <div className="divider w-24 mb-8" />
 
         {isLoading ? (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

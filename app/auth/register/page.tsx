@@ -50,7 +50,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-sm animate-slide-up">
         {/* Logo */}
         <div className="flex justify-center mb-8 animate-fade-in">
-          <Image src="/logo.svg" alt="Soho Jewels" width={180} height={45} unoptimized priority />
+          <Image src="/Soho Jewels logo.jpeg" alt="Soho Jewels" width={120} height={60} unoptimized priority className="object-contain" />
         </div>
 
         <div

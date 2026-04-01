@@ -52,7 +52,7 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex-shrink-0">
-          <Image src="/logo.svg" alt="Soho Jewels" width={160} height={40} priority unoptimized />
+          <Image src="/Soho Jewels logo.jpeg" alt="Soho Jewels" width={120} height={60} priority unoptimized className="object-contain" />
         </Link>
 
         {/* Categories dropdown */}
