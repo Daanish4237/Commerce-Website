@@ -111,6 +111,9 @@ export default function Navbar() {
         </Link>
 
         {/* Cart icon */}
+        <Link href="/wishlist" className="text-sm font-medium hover:text-yellow-400 transition-colors" style={{ color: 'var(--gold)' }} title="Favourites">
+          ♡
+        </Link>
         <Link href="/cart" className="relative flex items-center" style={{ color: 'var(--gold)' }}>
           <svg
             xmlns="http://www.w3.org/2000/svg"

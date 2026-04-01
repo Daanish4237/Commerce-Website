@@ -39,6 +39,7 @@ export default function ProductDetailPage() {
   const router = useRouter()
   const [cartLoading, setCartLoading] = useState(false)
   const [cartAdded, setCartAdded] = useState(false)
+  const [wishlisted, setWishlisted] = useState(false)
 
   const { data: product, isLoading, mutate } = useSWR<Product>(
     id ? `/api/products/${id}` : null,
@@ -180,13 +181,26 @@ export default function ProductDetailPage() {
             onClick={handleAddToCart}
             disabled={!inStock || cartLoading}
             className="mt-2 w-full max-w-xs rounded py-3 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50"
-            style={
-              inStock
-                ? { backgroundColor: 'var(--gold)', color: '#0D0D0D' }
-                : { backgroundColor: '#333', color: '#666' }
-            }
+            style={inStock ? { backgroundColor: 'var(--gold)', color: '#0D0D0D' } : { backgroundColor: '#333', color: '#666' }}
           >
             {cartLoading ? 'Adding…' : cartAdded ? 'Added!' : inStock ? 'Add to Cart' : 'Out of Stock'}
+          </button>
+
+          <button
+            onClick={async () => {
+              if (!session) { router.push('/auth/login'); return }
+              const method = wishlisted ? 'DELETE' : 'POST'
+              await fetch('/api/wishlist', {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ productId: product.id }),
+              })
+              setWishlisted(!wishlisted)
+            }}
+            className="mt-1 w-full max-w-xs rounded py-3 text-sm font-semibold border transition-colors"
+            style={{ borderColor: 'var(--gold)', color: wishlisted ? '#e05c5c' : 'var(--gold)', backgroundColor: 'transparent' }}
+          >
+            {wishlisted ? '♥ Remove from Favourites' : '♡ Add to Favourites'}
           </button>
         </div>
       </div>
