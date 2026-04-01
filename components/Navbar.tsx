@@ -102,6 +102,14 @@ export default function Navbar() {
           className="flex-1 max-w-xs rounded border border-yellow-700 bg-transparent px-3 py-1.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-600"
         />
 
+        {/* About & Contact links */}
+        <Link href="/about" className="text-sm font-medium hover:text-yellow-400 transition-colors whitespace-nowrap" style={{ color: 'var(--gold)' }}>
+          About Us
+        </Link>
+        <Link href="/contact" className="text-sm font-medium hover:text-yellow-400 transition-colors whitespace-nowrap" style={{ color: 'var(--gold)' }}>
+          Contact Us
+        </Link>
+
         {/* Cart icon */}
         <Link href="/cart" className="relative flex items-center" style={{ color: 'var(--gold)' }}>
           <svg
