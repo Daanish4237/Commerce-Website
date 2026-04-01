@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { Prisma } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 export async function DELETE(req: NextRequest) {
   try {
     await requireAuth('ADMIN')

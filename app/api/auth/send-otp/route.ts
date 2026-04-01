@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { generateOtp } from '@/lib/otp-store'
 import { sendMail } from '@/lib/email'
 
+export const dynamic = 'force-dynamic'
+
 const bodySchema = z.object({
   userId: z.string().min(1),
 })

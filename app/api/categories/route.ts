@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { Prisma } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 const createCategorySchema = z.object({
   name: z.string().min(1, 'Name is required'),
 })

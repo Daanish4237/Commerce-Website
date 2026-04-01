@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { Prisma } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 const createSchema = z.object({
   productId: z.string().min(1),
   rating: z.number().int().min(1).max(5),

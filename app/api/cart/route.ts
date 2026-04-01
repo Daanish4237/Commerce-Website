@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { Prisma } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 const addSchema = z.object({ productId: z.string().min(1) })
 const removeSchema = z.object({ productId: z.string().min(1) })
 const updateSchema = z.object({ productId: z.string().min(1), quantity: z.number().int().min(1) })

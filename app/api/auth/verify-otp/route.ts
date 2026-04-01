@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { verifyOtp } from '@/lib/otp-store'
 
+export const dynamic = 'force-dynamic'
+
 const bodySchema = z.object({
   userId: z.string().min(1),
   otp: z.string().length(6).regex(/^\d{6}$/, 'OTP must be 6 digits'),

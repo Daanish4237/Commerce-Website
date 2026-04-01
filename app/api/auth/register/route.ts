@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email address'),

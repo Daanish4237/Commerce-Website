@@ -5,6 +5,8 @@ import { requireAuth } from '@/lib/auth'
 import { cloudinary } from '@/lib/cloudinary'
 import { Prisma } from '@prisma/client'
 
+export const dynamic = 'force-dynamic'
+
 const addProductSchema = z.object({
   sku: z.string().min(1, 'SKU is required'),
   name: z.string().min(1, 'Name is required'),

@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { createBill } from '@/lib/billplz'
 
+export const dynamic = 'force-dynamic'
+
 const schema = z.object({ orderId: z.string().min(1) })
 
 export async function POST(req: NextRequest) {

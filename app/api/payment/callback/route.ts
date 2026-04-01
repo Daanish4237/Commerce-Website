@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyBillplzSignature } from '@/lib/billplz'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const text = await req.text()
   const params: Record<string, string> = {}
