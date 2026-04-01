@@ -125,3 +125,16 @@ input:focus, select:focus, textarea:focus {
 }
 .btn-gold:active { transform: translateY(0); }
 .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Fix native select dropdown background */
+select {
+  background-color: #111111 !important;
+  color: #e8e0d0 !important;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+select option {
+  background-color: #111111;
+  color: #e8e0d0;
+}
