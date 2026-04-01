@@ -124,9 +124,24 @@ export default function NewProductPage() {
           {previews.length > 0 && (
             <div className="mt-2 grid grid-cols-4 gap-2">
               {previews.map((url, i) => (
-                <div key={i} className="relative aspect-square rounded overflow-hidden border border-yellow-800">
+                <div key={i} className="relative aspect-square rounded overflow-hidden border border-yellow-800 group">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={url} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                  {/* Delete button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newImages = images.filter((_, idx) => idx !== i)
+                      const newPreviews = previews.filter((_, idx) => idx !== i)
+                      setImages(newImages)
+                      setPreviews(newPreviews)
+                    }}
+                    className="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"
+                    style={{ backgroundColor: 'rgba(220,38,38,0.9)', color: 'white' }}
+                    title="Remove image"
+                  >
+                    ✕
+                  </button>
                   <span className="absolute bottom-0 left-0 right-0 text-center text-xs bg-black/60 text-gray-300 py-0.5">{i + 1}</span>
                 </div>
               ))}
