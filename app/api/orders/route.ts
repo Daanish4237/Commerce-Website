@@ -61,7 +61,13 @@ export async function POST(req: NextRequest) {
       userId: session.user.id,
       totalPrice,
       status: 'PENDING',
-      ...parsed.data,
+      shippingName: parsed.data.shippingName,
+      shippingPhone: parsed.data.shippingPhone,
+      shippingAddress: parsed.data.shippingAddress,
+      shippingCity: parsed.data.shippingCity,
+      shippingState: parsed.data.shippingState,
+      shippingPostcode: parsed.data.shippingPostcode,
+      preferredCourier: parsed.data.preferredCourier,
       items: {
         create: cartItems.map((item) => ({
           productId: item.productId,
@@ -69,7 +75,7 @@ export async function POST(req: NextRequest) {
           price: item.product.price,
         })),
       },
-    },
+    } as never,
     include: { items: true },
   })
 
