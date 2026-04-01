@@ -25,6 +25,9 @@ export default function NewProductPage() {
   const [sizes, setSizes] = useState('')
   const [images, setImages] = useState<File[]>([])
   const [previews, setPreviews] = useState<string[]>([])
+  const [video, setVideo] = useState<File | null>(null)
+  const [videoPreview, setVideoPreview] = useState<string>('')
+  const [videoError, setVideoError] = useState('')
 
   useEffect(() => {
     fetch('/api/categories').then(r => r.json()).then(d => setCategories(d.categories ?? d)).catch(() => setError('Failed to load categories.'))
@@ -34,6 +37,26 @@ export default function NewProductPage() {
     const files = Array.from(e.target.files ?? [])
     setImages(files)
     setPreviews(files.map(f => URL.createObjectURL(f)))
+  }
+
+  function handleVideoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setVideoError('')
+    const file = e.target.files?.[0] ?? null
+    if (!file) { setVideo(null); setVideoPreview(''); return }
+    // Validate duration client-side
+    const url = URL.createObjectURL(file)
+    const vid = document.createElement('video')
+    vid.src = url
+    vid.onloadedmetadata = () => {
+      if (vid.duration > 60) {
+        setVideoError('Video must be less than 1 minute long.')
+        setVideo(null)
+        setVideoPreview('')
+      } else {
+        setVideo(file)
+        setVideoPreview(url)
+      }
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -54,6 +77,7 @@ export default function NewProductPage() {
       fd.append('colours', colours)
       fd.append('sizes', sizes)
       images.forEach((img, i) => fd.append(`images[${i}]`, img))
+      if (video) fd.append('video', video)
 
       const res = await fetch('/api/products/add', { method: 'POST', body: fd })
       const data = await res.json()
@@ -107,6 +131,15 @@ export default function NewProductPage() {
                 </div>
               ))}
             </div>
+          )}
+        </Field>
+
+        <Field label="Product Video (optional, max 60 seconds)">
+          <input type="file" accept="video/*" onChange={handleVideoChange}
+            className="text-sm text-gray-300 file:mr-3 file:rounded file:border-0 file:px-3 file:py-1 file:text-xs file:font-medium" />
+          {videoError && <p className="text-xs text-red-400 mt-1">{videoError}</p>}
+          {videoPreview && (
+            <video src={videoPreview} controls className="mt-2 w-full rounded border border-yellow-800" style={{ maxHeight: '200px' }} />
           )}
         </Field>
 

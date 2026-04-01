@@ -28,6 +28,7 @@ interface Product {
   materialCare: string
   imageUrl: string
   imageUrls: string
+  videoUrl: string
   colours: string
   sizes: string
   category: { name: string }
@@ -118,7 +119,7 @@ export default function ProductDetailPage() {
       <div className="flex flex-col gap-10 md:flex-row">
         {/* Slideshow */}
         <div className="w-full max-w-sm flex-shrink-0">
-          <ImageSlideshow images={imageList} alt={product.name} />
+          <ImageSlideshow images={imageList} alt={product.name} videoUrl={product.videoUrl || undefined} />
         </div>
 
         {/* Details */}

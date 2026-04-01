@@ -86,8 +86,24 @@ export async function POST(req: NextRequest) {
     const imageUrl = uploadedUrls[0]
     const imageUrls = uploadedUrls.join(',')
 
+    // Upload video if provided
+    let videoUrl = ''
+    const videoFile = formData.get('video') as File | null
+    if (videoFile && videoFile.size > 0) {
+      const videoBuffer = Buffer.from(await videoFile.arrayBuffer())
+      videoUrl = await new Promise<string>((resolve, reject) => {
+        cloudinary.uploader.upload_stream(
+          { folder: 'soho-jewels/videos', resource_type: 'video', max_bytes: 100 * 1024 * 1024 },
+          (err, result) => {
+            if (err || !result) return reject(err)
+            resolve(result.secure_url)
+          }
+        ).end(videoBuffer)
+      })
+    }
+
     const product = await prisma.product.create({
-      data: { ...result.data, imageUrl, imageUrls },
+      data: { ...result.data, imageUrl, imageUrls, videoUrl },
     })
     return NextResponse.json(product, { status: 201 })
   } catch (err) {
