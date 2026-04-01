@@ -29,33 +29,21 @@ const statusColor: Record<string, string> = {
 }
 
 const COURIERS = [
-  { code: 'GDEX', name: 'GDEX' },
-  { code: 'POSLAJU', name: 'Pos Laju' },
-  { code: 'JANDT', name: 'J&T Express' },
-  { code: 'DHL', name: 'DHL' },
-  { code: 'CITYLINK', name: 'City-Link' },
+  'Pos Laju',
+  'J&T Express',
+  'DHL',
+  'GDEX',
+  'City-Link',
+  'Ninja Van',
+  'Shopee Express',
+  'Lazada Express',
 ]
 
 function ShipModal({ order, onClose, onShipped }: { order: Order; onClose: () => void; onShipped: () => void }) {
-  const [form, setForm] = useState({
-    courierCode: 'POSLAJU',
-    senderName: 'Soho Jewels',
-    senderPhone: '',
-    senderAddress: '',
-    senderPostcode: '',
-    senderCity: '',
-    senderState: '',
-    receiverName: order.user.name,
-    receiverPhone: '',
-    receiverAddress: '',
-    receiverPostcode: '',
-    receiverCity: '',
-    receiverState: '',
-    weight: '0.5',
-  })
+  const [trackingNumber, setTrackingNumber] = useState('')
+  const [courierName, setCourierName] = useState('Pos Laju')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [result, setResult] = useState<{ trackingNumber: string; courierName: string; labelUrl: string } | null>(null)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -65,12 +53,12 @@ function ShipModal({ order, onClose, onShipped }: { order: Order; onClose: () =>
       const res = await fetch('/api/orders/ship', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: order.id, ...form, weight: Number(form.weight) }),
+        body: JSON.stringify({ orderId: order.id, trackingNumber, courierName }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Failed to ship'); return }
-      setResult(data)
       onShipped()
+      onClose()
     } catch {
       setError('An error occurred')
     } finally {
@@ -82,94 +70,39 @@ function ShipModal({ order, onClose, onShipped }: { order: Order; onClose: () =>
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
-      <div className="w-full max-w-2xl rounded-lg border border-yellow-800 p-6 overflow-y-auto max-h-screen" style={{ backgroundColor: '#111' }}>
+      <div className="w-full max-w-md rounded-lg border border-yellow-800 p-6" style={{ backgroundColor: '#111' }}>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold" style={{ color: 'var(--gold)' }}>Ship Order #{order.id.slice(0, 8)}…</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-white">✕</button>
         </div>
 
-        {result ? (
-          <div className="flex flex-col gap-4 text-center py-4">
-            <p className="text-green-400 text-lg">✓ Shipment Created</p>
-            <p className="text-sm text-gray-300">Tracking Number: <span className="font-mono text-white">{result.trackingNumber}</span></p>
-            <p className="text-sm text-gray-300">Courier: {result.courierName}</p>
-            {result.labelUrl && (
-              <a href={result.labelUrl} target="_blank" rel="noopener noreferrer"
-                className="text-sm underline" style={{ color: 'var(--gold)' }}>
-                Download Shipping Label
-              </a>
-            )}
-            <button onClick={onClose} className="mt-2 rounded px-6 py-2 text-sm font-semibold"
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div>
+            <label className="text-xs text-gray-400 uppercase tracking-wider">Courier</label>
+            <select value={courierName} onChange={e => setCourierName(e.target.value)} className={inputCls}>
+              {COURIERS.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs text-gray-400 uppercase tracking-wider">Tracking Number</label>
+            <input value={trackingNumber} onChange={e => setTrackingNumber(e.target.value)}
+              required placeholder="e.g. EP123456789MY" className={inputCls} />
+          </div>
+
+          {error && <p className="text-sm text-red-400">{error}</p>}
+
+          <div className="flex gap-3 pt-2">
+            <button type="submit" disabled={loading}
+              className="rounded px-6 py-2 text-sm font-semibold disabled:opacity-50"
               style={{ backgroundColor: 'var(--gold)', color: '#0A0A0A' }}>
-              Done
+              {loading ? 'Shipping…' : 'Mark as Shipped'}
+            </button>
+            <button type="button" onClick={onClose}
+              className="rounded border border-yellow-800 px-6 py-2 text-sm text-gray-300 hover:bg-yellow-900/20">
+              Cancel
             </button>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
-              <label className="text-xs text-gray-400 uppercase tracking-wider">Courier</label>
-              <select value={form.courierCode} onChange={e => setForm({ ...form, courierCode: e.target.value })} className={inputCls}>
-                {COURIERS.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-              </select>
-            </div>
-
-            <div className="col-span-2 border-t border-yellow-900/30 pt-3">
-              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--gold)' }}>Sender (Your Store)</p>
-            </div>
-            {[
-              { key: 'senderName', label: 'Name', placeholder: 'Soho Jewels' },
-              { key: 'senderPhone', label: 'Phone', placeholder: '0123456789' },
-              { key: 'senderAddress', label: 'Address', placeholder: 'No. 1, Jalan...' },
-              { key: 'senderPostcode', label: 'Postcode', placeholder: '50000' },
-              { key: 'senderCity', label: 'City', placeholder: 'Kuala Lumpur' },
-              { key: 'senderState', label: 'State', placeholder: 'Wilayah Persekutuan' },
-            ].map(f => (
-              <div key={f.key}>
-                <label className="text-xs text-gray-400">{f.label}</label>
-                <input value={(form as Record<string, string>)[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                  required placeholder={f.placeholder} className={inputCls} />
-              </div>
-            ))}
-
-            <div className="col-span-2 border-t border-yellow-900/30 pt-3">
-              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--gold)' }}>Receiver (Customer)</p>
-            </div>
-            {[
-              { key: 'receiverName', label: 'Name', placeholder: order.user.name },
-              { key: 'receiverPhone', label: 'Phone', placeholder: '0123456789' },
-              { key: 'receiverAddress', label: 'Address', placeholder: 'No. 1, Jalan...' },
-              { key: 'receiverPostcode', label: 'Postcode', placeholder: '50000' },
-              { key: 'receiverCity', label: 'City', placeholder: 'Kuala Lumpur' },
-              { key: 'receiverState', label: 'State', placeholder: 'Selangor' },
-            ].map(f => (
-              <div key={f.key}>
-                <label className="text-xs text-gray-400">{f.label}</label>
-                <input value={(form as Record<string, string>)[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-                  required placeholder={f.placeholder} className={inputCls} />
-              </div>
-            ))}
-
-            <div>
-              <label className="text-xs text-gray-400">Weight (kg)</label>
-              <input type="number" step="0.1" min="0.1" value={form.weight} onChange={e => setForm({ ...form, weight: e.target.value })}
-                required className={inputCls} />
-            </div>
-
-            {error && <p className="col-span-2 text-sm text-red-400">{error}</p>}
-
-            <div className="col-span-2 flex gap-3 pt-2">
-              <button type="submit" disabled={loading}
-                className="rounded px-6 py-2 text-sm font-semibold disabled:opacity-50"
-                style={{ backgroundColor: 'var(--gold)', color: '#0A0A0A' }}>
-                {loading ? 'Creating Shipment…' : 'Create Shipment & Ship'}
-              </button>
-              <button type="button" onClick={onClose}
-                className="rounded border border-yellow-800 px-6 py-2 text-sm text-gray-300 hover:bg-yellow-900/20">
-                Cancel
-              </button>
-            </div>
-          </form>
-        )}
+        </form>
       </div>
     </div>
   )
