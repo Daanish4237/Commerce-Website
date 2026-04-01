@@ -1,42 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
+import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
-import { verifyBillplzSignature } from '@/lib/billplz'
 
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  const text = await req.text()
-  const params: Record<string, string> = {}
-  new URLSearchParams(text).forEach((v, k) => { params[k] = v })
+  const stripeKey = process.env.STRIPE_SECRET_KEY
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 
-  const secret = process.env.BILLPLZ_X_SIGNATURE_KEY ?? ''
-  if (!verifyBillplzSignature(params, secret)) {
+  if (!stripeKey) {
+    return NextResponse.json({ ok: true }) // demo mode
+  }
+
+  const stripe = new Stripe(stripeKey)
+  const body = await req.text()
+  const sig = req.headers.get('stripe-signature') ?? ''
+
+  let event: Stripe.Event
+  try {
+    event = stripe.webhooks.constructEvent(body, sig, webhookSecret ?? '')
+  } catch {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
-  const billplzId = params['id']
-  const paid = params['paid'] === 'true'
+  if (event.type === 'checkout.session.completed') {
+    const checkoutSession = event.data.object as Stripe.Checkout.Session
+    const orderId = checkoutSession.metadata?.orderId
 
-  const order = await prisma.order.findFirst({ where: { billplzId }, include: { items: true } })
-  if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+    if (!orderId) return NextResponse.json({ ok: true })
 
-  // Monotonic: don't re-process already-settled orders
-  if (order.status !== 'PENDING') {
-    return NextResponse.json({ ok: true })
-  }
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true },
+    })
 
-  if (paid) {
-    await prisma.$transaction([
-      prisma.order.update({ where: { id: order.id }, data: { status: 'PAID' } }),
-      ...order.items.map((item) =>
-        prisma.product.update({
-          where: { id: item.productId },
-          data: { stock: { decrement: item.quantity } },
-        })
-      ),
-    ])
-  } else {
-    await prisma.order.update({ where: { id: order.id }, data: { status: 'FAILED' } })
+    if (!order || order.status !== 'PENDING') return NextResponse.json({ ok: true })
+
+    await prisma.order.update({ where: { id: orderId }, data: { status: 'PAID' } })
+    for (const item of order.items) {
+      await prisma.product.update({
+        where: { id: item.productId },
+        data: { stock: { decrement: item.quantity } },
+      })
+    }
   }
 
   return NextResponse.json({ ok: true })

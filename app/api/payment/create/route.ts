@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
-import { createBill } from '@/lib/billplz'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,28 +14,26 @@ export async function POST(req: NextRequest) {
 
   let body: unknown
   try { body = await req.json() } catch {
-    return NextResponse.json({ error: 'Validation error', details: ['Invalid JSON'] }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
   }
 
   const parsed = schema.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'Validation error', details: parsed.error.errors.map(e => e.message) }, { status: 400 })
+    return NextResponse.json({ error: 'Validation error' }, { status: 400 })
   }
 
   const order = await prisma.order.findUnique({
     where: { id: parsed.data.orderId },
-    include: { user: true },
+    include: { user: true, items: { include: { product: true } } },
   })
 
   if (!order) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   if (order.userId !== session.user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const amountInSen = Math.round(Number(order.totalPrice) * 100)
   const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
-  const collectionId = process.env.BILLPLZ_COLLECTION_ID ?? ''
 
-  // Demo mode: if no Billplz credentials, mark order as PAID directly
-  if (!process.env.BILLPLZ_API_KEY || !collectionId) {
+  // Demo mode: no Stripe key configured
+  if (!process.env.STRIPE_SECRET_KEY) {
     const items = await prisma.orderItem.findMany({ where: { orderId: order.id } })
     await prisma.order.update({ where: { id: order.id }, data: { status: 'PAID' } })
     for (const item of items) {
@@ -47,22 +45,31 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ billUrl: `${baseUrl}/orders/success?orderId=${order.id}` })
   }
 
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+
   try {
-    const bill = await createBill({
-      collectionId,
-      email: order.user.email,
-      name: order.user.name,
-      amount: amountInSen,
-      description: `Soho Jewels Order #${order.id}`,
-      redirectUrl: `${baseUrl}/orders/success?orderId=${order.id}`,
-      callbackUrl: `${baseUrl}/api/payment/callback`,
-      reference1: order.id,
+    const checkoutSession = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      mode: 'payment',
+      customer_email: order.user.email,
+      line_items: order.items.map((item) => ({
+        price_data: {
+          currency: 'myr',
+          product_data: { name: item.product.name },
+          unit_amount: Math.round(Number(item.product.price) * 100),
+        },
+        quantity: item.quantity,
+      })),
+      success_url: `${baseUrl}/orders/success?orderId=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/cart`,
+      metadata: { orderId: order.id },
     })
 
-    await prisma.order.update({ where: { id: order.id }, data: { billplzId: bill.id } })
+    await prisma.order.update({ where: { id: order.id }, data: { billplzId: checkoutSession.id } })
 
-    return NextResponse.json({ billUrl: bill.url })
-  } catch {
+    return NextResponse.json({ billUrl: checkoutSession.url })
+  } catch (err) {
+    console.error('Stripe error:', err)
     return NextResponse.json({ error: 'Payment gateway error' }, { status: 502 })
   }
 }

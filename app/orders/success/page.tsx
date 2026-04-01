@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import useSWR from 'swr'
 
@@ -27,6 +27,18 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
+  const sessionId = searchParams.get('session_id')
+
+  // Confirm Stripe payment on page load
+  useEffect(() => {
+    if (orderId) {
+      fetch('/api/payment/confirm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, sessionId }),
+      })
+    }
+  }, [orderId, sessionId])
 
   const { data: orders, isLoading } = useSWR<Order[]>(orderId ? '/api/orders' : null, fetcher)
   const order = orders?.find((o) => o.id === orderId)
