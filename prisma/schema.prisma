@@ -47,6 +47,8 @@ model Product {
   stock       Int      @default(0)
   description String   @db.Text
   imageUrl    String
+  colours     String   @default("")
+  sizes       String   @default("")
   createdAt   DateTime @default(now())
 
   cartItems     CartItem[]

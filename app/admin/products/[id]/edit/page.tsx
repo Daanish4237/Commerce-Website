@@ -26,6 +26,8 @@ export default function EditProductPage() {
   const [price, setPrice] = useState('')
   const [stock, setStock] = useState('0')
   const [description, setDescription] = useState('')
+  const [colours, setColours] = useState('')
+  const [sizes, setSizes] = useState('')
   const [newImage, setNewImage] = useState<File | null>(null)
 
   useEffect(() => {
@@ -41,6 +43,8 @@ export default function EditProductPage() {
         setPrice(String(product.price ?? ''))
         setStock(String(product.stock ?? 0))
         setDescription(product.description ?? '')
+        setColours(product.colours ?? '')
+        setSizes(product.sizes ?? '')
         setCategories(catData.categories ?? catData)
       })
       .catch(() => setError('Failed to load product.'))
@@ -61,7 +65,7 @@ export default function EditProductPage() {
         imageBase64 = btoa(binary)
       }
 
-      const body: Record<string, unknown> = { id, sku, name, categoryId, type, price: Number(price), stock: Number(stock), description }
+      const body: Record<string, unknown> = { id, sku, name, categoryId, type, price: Number(price), stock: Number(stock), description, colours, sizes }
       if (imageBase64) body.imageBase64 = imageBase64
 
       const res = await fetch('/api/products/update', {
@@ -114,6 +118,12 @@ export default function EditProductPage() {
         </Field>
         <Field label="Description">
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={3} className={inputCls} />
+        </Field>
+        <Field label="Colours (comma-separated)">
+          <input value={colours} onChange={(e) => setColours(e.target.value)} placeholder="e.g. Gold,Silver,Rose Gold" className={inputCls} />
+        </Field>
+        <Field label="Sizes (comma-separated)">
+          <input value={sizes} onChange={(e) => setSizes(e.target.value)} placeholder="e.g. 6,7,8,9,10" className={inputCls} />
         </Field>
         <Field label="New Image (optional)">
           <input type="file" accept="image/*" onChange={(e) => setNewImage(e.target.files?.[0] ?? null)}

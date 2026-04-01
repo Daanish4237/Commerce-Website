@@ -15,6 +15,8 @@ const addProductSchema = z.object({
   price: z.coerce.number().positive('Price must be positive'),
   stock: z.coerce.number().int().min(0, 'Stock cannot be negative'),
   description: z.string().min(1, 'Description is required'),
+  colours: z.string().optional(),
+  sizes: z.string().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -39,6 +41,8 @@ export async function POST(req: NextRequest) {
     price: formData.get('price'),
     stock: formData.get('stock'),
     description: formData.get('description'),
+    colours: formData.get('colours') ?? '',
+    sizes: formData.get('sizes') ?? '',
   }
 
   const result = addProductSchema.safeParse(raw)

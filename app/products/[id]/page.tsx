@@ -25,6 +25,8 @@ interface Product {
   stock: number
   description: string
   imageUrl: string
+  colours: string
+  sizes: string
   category: { name: string }
   reviews: Review[]
 }
@@ -42,6 +44,11 @@ export default function ProductDetailPage() {
     id ? `/api/products/${id}` : null,
     fetcher
   )
+
+  const colourList = product?.colours ? product.colours.split(',').map(c => c.trim()).filter(Boolean) : []
+  const sizeList = product?.sizes ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []
+  const [selectedColour, setSelectedColour] = useState('')
+  const [selectedSize, setSelectedSize] = useState('')
 
   const inStock = (product?.stock ?? 0) > 0
 
@@ -136,6 +143,38 @@ export default function ProductDetailPage() {
           </span>
 
           <p className="text-sm leading-relaxed text-gray-300">{product.description}</p>
+
+          {/* Colour variants */}
+          {colourList.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <p className="text-xs uppercase tracking-wider text-gray-400">Colour</p>
+              <div className="flex flex-wrap gap-2">
+                {colourList.map((colour) => (
+                  <button key={colour} onClick={() => setSelectedColour(colour)}
+                    className={`px-3 py-1.5 text-xs rounded border transition-all ${selectedColour === colour ? 'border-yellow-500 text-white' : 'border-yellow-800 text-gray-400 hover:border-yellow-600'}`}
+                    style={selectedColour === colour ? { backgroundColor: 'rgba(201,168,76,0.15)' } : {}}>
+                    {colour}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Size variants */}
+          {sizeList.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <p className="text-xs uppercase tracking-wider text-gray-400">Size</p>
+              <div className="flex flex-wrap gap-2">
+                {sizeList.map((size) => (
+                  <button key={size} onClick={() => setSelectedSize(size)}
+                    className={`px-3 py-1.5 text-xs rounded border transition-all ${selectedSize === size ? 'border-yellow-500 text-white' : 'border-yellow-800 text-gray-400 hover:border-yellow-600'}`}
+                    style={selectedSize === size ? { backgroundColor: 'rgba(201,168,76,0.15)' } : {}}>
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <button
             onClick={handleAddToCart}

@@ -23,6 +23,8 @@ export default function NewProductPage() {
   const [price, setPrice] = useState('')
   const [stock, setStock] = useState('0')
   const [description, setDescription] = useState('')
+  const [colours, setColours] = useState('')
+  const [sizes, setSizes] = useState('')
   const [image, setImage] = useState<File | null>(null)
 
   useEffect(() => {
@@ -46,6 +48,8 @@ export default function NewProductPage() {
       fd.append('price', price)
       fd.append('stock', stock)
       fd.append('description', description)
+      fd.append('colours', colours)
+      fd.append('sizes', sizes)
       fd.append('image', image)
 
       const res = await fetch('/api/products/add', { method: 'POST', body: fd })
@@ -92,6 +96,12 @@ export default function NewProductPage() {
         </Field>
         <Field label="Description">
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} required rows={3} placeholder="Product description" className={inputCls} />
+        </Field>
+        <Field label="Colours (comma-separated, e.g. Red,Blue,Black)">
+          <input value={colours} onChange={(e) => setColours(e.target.value)} placeholder="e.g. Gold,Silver,Rose Gold" className={inputCls} />
+        </Field>
+        <Field label="Sizes (comma-separated, e.g. S,M,L or ring sizes)">
+          <input value={sizes} onChange={(e) => setSizes(e.target.value)} placeholder="e.g. 6,7,8,9,10" className={inputCls} />
         </Field>
         <Field label="Image">
           <input type="file" accept="image/*" required onChange={(e) => setImage(e.target.files?.[0] ?? null)}
