@@ -52,7 +52,7 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
         {/* Logo */}
         <Link href="/" className="flex-shrink-0">
-          <Image src="/logo.svg" alt="Soho Jewels" width={160} height={40} priority />
+          <Image src="/logo.svg" alt="Soho Jewels" width={160} height={40} priority unoptimized />
         </Link>
 
         {/* Categories dropdown */}
@@ -145,6 +145,16 @@ export default function Navbar() {
                   <p className="px-4 py-2 text-xs text-gray-400 truncate">
                     {session.user?.email}
                   </p>
+                  {session.user?.role === 'ADMIN' && (
+                    <Link
+                      href="/admin"
+                      className="block px-4 py-2 text-sm hover:bg-yellow-900"
+                      style={{ color: 'var(--gold)' }}
+                      onClick={() => setAccountOpen(false)}
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
                   <button
                     onClick={() => {
                       setAccountOpen(false)

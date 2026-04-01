@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -55,42 +56,101 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4" style={{ backgroundColor: 'var(--bg)' }}>
-      <div className="w-full max-w-sm rounded-lg border border-yellow-800 p-8" style={{ backgroundColor: '#111' }}>
-        <h1 className="mb-6 text-center text-2xl font-bold" style={{ color: 'var(--gold)' }}>
-          {requiresOtp ? 'Enter OTP' : 'Sign In'}
-        </h1>
+    <main
+      className="flex min-h-screen items-center justify-center px-4 relative overflow-hidden"
+      style={{ backgroundColor: 'var(--bg)' }}
+    >
+      {/* Background glow */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full opacity-10 blur-3xl"
+          style={{ backgroundColor: 'var(--gold)' }} />
+      </div>
 
-        {!requiresOtp ? (
-          <form onSubmit={handleLogin} className="flex flex-col gap-4">
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="Email"
-              className="rounded border border-yellow-700 bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-600" />
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Password"
-              className="rounded border border-yellow-700 bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-600" />
-            {error && <p className="text-xs text-red-400">{error}</p>}
-            <button type="submit" disabled={loading}
-              className="rounded py-2 text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: 'var(--gold)', color: '#0D0D0D' }}>
-              {loading ? 'Signing in…' : 'Sign In'}
-            </button>
-            <p className="text-center text-xs text-gray-400">
-              No account?{' '}
-              <Link href="/auth/register" style={{ color: 'var(--gold)' }}>Register</Link>
-            </p>
-          </form>
-        ) : (
-          <form onSubmit={handleOtp} className="flex flex-col gap-4">
-            <p className="text-sm text-gray-300">A 6-digit OTP has been sent to your email.</p>
-            <input type="text" value={otp} onChange={(e) => setOtp(e.target.value)} required placeholder="6-digit OTP" maxLength={6}
-              className="rounded border border-yellow-700 bg-transparent px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-yellow-600" />
-            {error && <p className="text-xs text-red-400">{error}</p>}
-            <button type="submit" disabled={loading}
-              className="rounded py-2 text-sm font-semibold disabled:opacity-50"
-              style={{ backgroundColor: 'var(--gold)', color: '#0D0D0D' }}>
-              {loading ? 'Verifying…' : 'Verify OTP'}
-            </button>
-          </form>
-        )}
+      <div className="w-full max-w-sm animate-slide-up">
+        {/* Logo */}
+        <div className="flex justify-center mb-8 animate-fade-in">
+          <Image src="/logo.svg" alt="Soho Jewels" width={180} height={45} unoptimized priority />
+        </div>
+
+        <div
+          className="rounded-2xl border border-yellow-800 p-8 shadow-2xl backdrop-blur-sm"
+          style={{ backgroundColor: 'rgba(17,17,17,0.95)' }}
+        >
+          <h1 className="mb-2 text-center text-2xl font-bold tracking-wide animate-slide-up" style={{ color: 'var(--gold)' }}>
+            {requiresOtp ? 'Verify OTP' : 'Welcome Back'}
+          </h1>
+          <p className="mb-6 text-center text-xs text-gray-500 animate-slide-up-delay">
+            {requiresOtp ? 'Enter the code sent to your email' : 'Sign in to your account'}
+          </p>
+
+          {!requiresOtp ? (
+            <form onSubmit={handleLogin} className="flex flex-col gap-4 animate-slide-up-delay">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-400 uppercase tracking-wider">Email</label>
+                <input
+                  type="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                  className="rounded-lg border border-yellow-800 bg-transparent px-4 py-2.5 text-sm text-white placeholder-gray-600 transition-all focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-600"
+                  placeholder="you@example.com"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-400 uppercase tracking-wider">Password</label>
+                <input
+                  type="password" value={password} onChange={(e) => setPassword(e.target.value)} required
+                  className="rounded-lg border border-yellow-800 bg-transparent px-4 py-2.5 text-sm text-white placeholder-gray-600 transition-all focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-600"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              {error && (
+                <p className="rounded-lg bg-red-950 border border-red-800 px-3 py-2 text-xs text-red-400 animate-fade-in">
+                  {error}
+                </p>
+              )}
+
+              <button
+                type="submit" disabled={loading}
+                className="mt-2 rounded-lg py-3 text-sm font-bold tracking-widest uppercase transition-all duration-200 disabled:opacity-50 hover:brightness-110 active:scale-95"
+                style={{ backgroundColor: 'var(--gold)', color: '#0D0D0D' }}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+                    Signing in…
+                  </span>
+                ) : 'Sign In'}
+              </button>
+
+              <p className="text-center text-xs text-gray-500">
+                No account?{' '}
+                <Link href="/auth/register" className="font-medium hover:text-yellow-400 transition-colors" style={{ color: 'var(--gold)' }}>
+                  Create one
+                </Link>
+              </p>
+            </form>
+          ) : (
+            <form onSubmit={handleOtp} className="flex flex-col gap-4 animate-slide-up-delay">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs text-gray-400 uppercase tracking-wider">6-digit OTP</label>
+                <input
+                  type="text" value={otp} onChange={(e) => setOtp(e.target.value)} required maxLength={6}
+                  className="rounded-lg border border-yellow-800 bg-transparent px-4 py-2.5 text-center text-lg tracking-[0.5em] text-white placeholder-gray-600 transition-all focus:border-yellow-500 focus:outline-none focus:ring-1 focus:ring-yellow-600"
+                  placeholder="000000"
+                />
+              </div>
+              {error && (
+                <p className="rounded-lg bg-red-950 border border-red-800 px-3 py-2 text-xs text-red-400">{error}</p>
+              )}
+              <button
+                type="submit" disabled={loading}
+                className="rounded-lg py-3 text-sm font-bold tracking-widest uppercase transition-all disabled:opacity-50 hover:brightness-110 active:scale-95"
+                style={{ backgroundColor: 'var(--gold)', color: '#0D0D0D' }}
+              >
+                {loading ? 'Verifying…' : 'Verify'}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </main>
   )
