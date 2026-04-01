@@ -46,6 +46,15 @@ export default function ProductDetailPage() {
     fetcher
   )
 
+  // Check if the current user has purchased this product
+  const { data: orders } = useSWR<{ id: string; status: string; items: { productId: string }[] }[]>(
+    session ? '/api/orders' : null,
+    fetcher
+  )
+  const hasPurchased = orders?.some(
+    (o) => o.status === 'PAID' && o.items?.some((i) => i.productId === id)
+  ) ?? false
+
   const colourList = product?.colours ? product.colours.split(',').map(c => c.trim()).filter(Boolean) : []
   const sizeList = product?.sizes ? product.sizes.split(',').map(s => s.trim()).filter(Boolean) : []
   const [selectedColour, setSelectedColour] = useState('')
@@ -223,7 +232,13 @@ export default function ProductDetailPage() {
 
         {session && (
           <div className="mt-10 rounded-lg border border-yellow-800 p-6" style={{ backgroundColor: '#111' }}>
-            <ReviewForm productId={product.id} onSubmitted={() => mutate()} />
+            {hasPurchased ? (
+              <ReviewForm productId={product.id} onSubmitted={() => mutate()} />
+            ) : (
+              <p className="text-sm text-gray-500 text-center py-2">
+                Only verified buyers can leave a review. Purchase this product to share your experience.
+              </p>
+            )}
           </div>
         )}
       </section>
