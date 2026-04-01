@@ -157,3 +157,32 @@ select option {
 .ornament-glow {
   animation: ornamentGlow 3s ease-in-out infinite;
 }
+
+/* Luxury hover underline effect for nav links */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  transition: width 0.3s ease;
+}
+.nav-link:hover::after { width: 100%; }
+
+/* Page transition fade */
+main { animation: fadeIn 0.4s ease; }
+
+/* Luxury table styles for admin */
+table { border-collapse: collapse; }
+thead tr { background: rgba(201, 168, 76, 0.05); }
+
+/* Gold text selection */
+::selection {
+  background: rgba(201, 168, 76, 0.3);
+  color: #fff;
+}
