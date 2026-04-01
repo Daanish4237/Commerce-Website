@@ -1,29 +1,183 @@
 'use client'
 
+import { useState } from 'react'
 import useSWR from 'swr'
 
 export const dynamic = 'force-dynamic'
 
-interface OrderItem { id: string; quantity: number; price: number | string; product: { name: string } }
+interface OrderItem { id: string; quantity: number; price: string | number; product: { name: string } }
 interface Order {
   id: string
   status: string
-  totalPrice: number | string
+  totalPrice: string | number
   createdAt: string
+  trackingNumber?: string
+  courierName?: string
+  shippedAt?: string
   user: { name: string; email: string }
   items: OrderItem[]
 }
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
+const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 const statusColor: Record<string, string> = {
   PENDING: 'text-yellow-400',
-  PAID: 'text-green-400',
+  PAID: 'text-blue-400',
   FAILED: 'text-red-400',
+  SHIPPED: 'text-purple-400',
+  DELIVERED: 'text-green-400',
+}
+
+const COURIERS = [
+  { code: 'GDEX', name: 'GDEX' },
+  { code: 'POSLAJU', name: 'Pos Laju' },
+  { code: 'JANDT', name: 'J&T Express' },
+  { code: 'DHL', name: 'DHL' },
+  { code: 'CITYLINK', name: 'City-Link' },
+]
+
+function ShipModal({ order, onClose, onShipped }: { order: Order; onClose: () => void; onShipped: () => void }) {
+  const [form, setForm] = useState({
+    courierCode: 'POSLAJU',
+    senderName: 'Soho Jewels',
+    senderPhone: '',
+    senderAddress: '',
+    senderPostcode: '',
+    senderCity: '',
+    senderState: '',
+    receiverName: order.user.name,
+    receiverPhone: '',
+    receiverAddress: '',
+    receiverPostcode: '',
+    receiverCity: '',
+    receiverState: '',
+    weight: '0.5',
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [result, setResult] = useState<{ trackingNumber: string; courierName: string; labelUrl: string } | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      const res = await fetch('/api/orders/ship', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId: order.id, ...form, weight: Number(form.weight) }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? 'Failed to ship'); return }
+      setResult(data)
+      onShipped()
+    } catch {
+      setError('An error occurred')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const inputCls = 'w-full rounded border border-yellow-800 bg-transparent px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-yellow-600'
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.85)' }}>
+      <div className="w-full max-w-2xl rounded-lg border border-yellow-800 p-6 overflow-y-auto max-h-screen" style={{ backgroundColor: '#111' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold" style={{ color: 'var(--gold)' }}>Ship Order #{order.id.slice(0, 8)}…</h2>
+          <button onClick={onClose} className="text-gray-500 hover:text-white">✕</button>
+        </div>
+
+        {result ? (
+          <div className="flex flex-col gap-4 text-center py-4">
+            <p className="text-green-400 text-lg">✓ Shipment Created</p>
+            <p className="text-sm text-gray-300">Tracking Number: <span className="font-mono text-white">{result.trackingNumber}</span></p>
+            <p className="text-sm text-gray-300">Courier: {result.courierName}</p>
+            {result.labelUrl && (
+              <a href={result.labelUrl} target="_blank" rel="noopener noreferrer"
+                className="text-sm underline" style={{ color: 'var(--gold)' }}>
+                Download Shipping Label
+              </a>
+            )}
+            <button onClick={onClose} className="mt-2 rounded px-6 py-2 text-sm font-semibold"
+              style={{ backgroundColor: 'var(--gold)', color: '#0A0A0A' }}>
+              Done
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <label className="text-xs text-gray-400 uppercase tracking-wider">Courier</label>
+              <select value={form.courierCode} onChange={e => setForm({ ...form, courierCode: e.target.value })} className={inputCls}>
+                {COURIERS.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+              </select>
+            </div>
+
+            <div className="col-span-2 border-t border-yellow-900/30 pt-3">
+              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--gold)' }}>Sender (Your Store)</p>
+            </div>
+            {[
+              { key: 'senderName', label: 'Name', placeholder: 'Soho Jewels' },
+              { key: 'senderPhone', label: 'Phone', placeholder: '0123456789' },
+              { key: 'senderAddress', label: 'Address', placeholder: 'No. 1, Jalan...' },
+              { key: 'senderPostcode', label: 'Postcode', placeholder: '50000' },
+              { key: 'senderCity', label: 'City', placeholder: 'Kuala Lumpur' },
+              { key: 'senderState', label: 'State', placeholder: 'Wilayah Persekutuan' },
+            ].map(f => (
+              <div key={f.key}>
+                <label className="text-xs text-gray-400">{f.label}</label>
+                <input value={(form as Record<string, string>)[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                  required placeholder={f.placeholder} className={inputCls} />
+              </div>
+            ))}
+
+            <div className="col-span-2 border-t border-yellow-900/30 pt-3">
+              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: 'var(--gold)' }}>Receiver (Customer)</p>
+            </div>
+            {[
+              { key: 'receiverName', label: 'Name', placeholder: order.user.name },
+              { key: 'receiverPhone', label: 'Phone', placeholder: '0123456789' },
+              { key: 'receiverAddress', label: 'Address', placeholder: 'No. 1, Jalan...' },
+              { key: 'receiverPostcode', label: 'Postcode', placeholder: '50000' },
+              { key: 'receiverCity', label: 'City', placeholder: 'Kuala Lumpur' },
+              { key: 'receiverState', label: 'State', placeholder: 'Selangor' },
+            ].map(f => (
+              <div key={f.key}>
+                <label className="text-xs text-gray-400">{f.label}</label>
+                <input value={(form as Record<string, string>)[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
+                  required placeholder={f.placeholder} className={inputCls} />
+              </div>
+            ))}
+
+            <div>
+              <label className="text-xs text-gray-400">Weight (kg)</label>
+              <input type="number" step="0.1" min="0.1" value={form.weight} onChange={e => setForm({ ...form, weight: e.target.value })}
+                required className={inputCls} />
+            </div>
+
+            {error && <p className="col-span-2 text-sm text-red-400">{error}</p>}
+
+            <div className="col-span-2 flex gap-3 pt-2">
+              <button type="submit" disabled={loading}
+                className="rounded px-6 py-2 text-sm font-semibold disabled:opacity-50"
+                style={{ backgroundColor: 'var(--gold)', color: '#0A0A0A' }}>
+                {loading ? 'Creating Shipment…' : 'Create Shipment & Ship'}
+              </button>
+              <button type="button" onClick={onClose}
+                className="rounded border border-yellow-800 px-6 py-2 text-sm text-gray-300 hover:bg-yellow-900/20">
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export default function AdminOrdersPage() {
-  const { data: orders, isLoading } = useSWR<Order[]>('/api/orders', fetcher)
+  const { data: orders, isLoading, mutate } = useSWR<Order[]>('/api/orders', fetcher)
+  const [shippingOrder, setShippingOrder] = useState<Order | null>(null)
 
   return (
     <div>
@@ -41,12 +195,14 @@ export default function AdminOrdersPage() {
                 <th className="px-4 py-3">Items</th>
                 <th className="px-4 py-3">Total</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Tracking</th>
                 <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {(orders ?? []).length === 0 && (
-                <tr><td colSpan={6} className="px-4 py-6 text-center text-gray-500">No orders yet.</td></tr>
+                <tr><td colSpan={8} className="px-4 py-6 text-center text-gray-500">No orders yet.</td></tr>
               )}
               {(orders ?? []).map((order) => (
                 <tr key={order.id} className="border-b border-yellow-900 hover:bg-yellow-950/20">
@@ -56,7 +212,7 @@ export default function AdminOrdersPage() {
                     <p className="text-gray-500 text-xs">{order.user.email}</p>
                   </td>
                   <td className="px-4 py-3 text-gray-300 text-xs">
-                    {order.items.map((i) => `${i.product.name} ×${i.quantity}`).join(', ')}
+                    {order.items.map(i => `${i.product.name} ×${i.quantity}`).join(', ')}
                   </td>
                   <td className="px-4 py-3 font-semibold" style={{ color: 'var(--gold)' }}>
                     RM {Number(order.totalPrice).toFixed(2)}
@@ -64,14 +220,52 @@ export default function AdminOrdersPage() {
                   <td className={`px-4 py-3 text-xs font-semibold ${statusColor[order.status] ?? 'text-gray-400'}`}>
                     {order.status}
                   </td>
+                  <td className="px-4 py-3 text-xs text-gray-400 font-mono">
+                    {order.trackingNumber ? (
+                      <div>
+                        <p>{order.trackingNumber}</p>
+                        <p className="text-gray-600">{order.courierName}</p>
+                      </div>
+                    ) : '—'}
+                  </td>
                   <td className="px-4 py-3 text-xs text-gray-400">
                     {new Date(order.createdAt).toLocaleDateString('en-MY')}
+                  </td>
+                  <td className="px-4 py-3">
+                    {order.status === 'PAID' && (
+                      <button onClick={() => setShippingOrder(order)}
+                        className="rounded px-3 py-1 text-xs font-medium"
+                        style={{ backgroundColor: 'var(--gold)', color: '#0A0A0A' }}>
+                        Ship
+                      </button>
+                    )}
+                    {order.status === 'SHIPPED' && (
+                      <button onClick={async () => {
+                        await fetch('/api/orders/deliver', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ orderId: order.id }),
+                        })
+                        mutate()
+                      }}
+                        className="rounded border border-green-700 px-3 py-1 text-xs font-medium text-green-400 hover:bg-green-900/20">
+                        Mark Delivered
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      )}
+
+      {shippingOrder && (
+        <ShipModal
+          order={shippingOrder}
+          onClose={() => setShippingOrder(null)}
+          onShipped={() => { mutate(); }}
+        />
       )}
     </div>
   )

@@ -166,6 +166,14 @@ export default function Navbar() {
                       Admin Dashboard
                     </Link>
                   )}
+                  <Link
+                    href="/orders"
+                    className="block px-4 py-2 text-sm hover:bg-yellow-900"
+                    style={{ color: 'var(--gold)' }}
+                    onClick={() => setAccountOpen(false)}
+                  >
+                    My Orders
+                  </Link>
                   <button
                     onClick={() => {
                       setAccountOpen(false)

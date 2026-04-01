@@ -61,13 +61,17 @@ model Product {
 }
 
 model Order {
-  id         String      @id @default(cuid())
-  userId     String
-  user       User        @relation(fields: [userId], references: [id])
-  totalPrice Decimal     @db.Decimal(10, 2)
-  status     OrderStatus @default(PENDING)
-  billplzId  String?
-  createdAt  DateTime    @default(now())
+  id             String      @id @default(cuid())
+  userId         String
+  user           User        @relation(fields: [userId], references: [id])
+  totalPrice     Decimal     @db.Decimal(10, 2)
+  status         OrderStatus @default(PENDING)
+  billplzId      String?
+  trackingNumber String?
+  courierName    String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  createdAt      DateTime    @default(now())
 
   items OrderItem[]
 }
@@ -76,6 +80,8 @@ enum OrderStatus {
   PENDING
   PAID
   FAILED
+  SHIPPED
+  DELIVERED
 }
 
 model OrderItem {
