@@ -2,6 +2,8 @@
 
 import useSWR from 'swr'
 
+export const dynamic = 'force-dynamic'
+
 interface OrderItem { id: string; quantity: number; price: number | string; product: { name: string } }
 interface Order {
   id: string

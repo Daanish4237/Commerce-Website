@@ -4,6 +4,8 @@ import Link from 'next/link'
 import useSWR from 'swr'
 import ProductGrid from '@/components/ProductGrid'
 
+export const dynamic = 'force-dynamic'
+
 interface Product {
   id: string
   name: string

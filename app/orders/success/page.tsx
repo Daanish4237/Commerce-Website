@@ -5,6 +5,8 @@ import { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import useSWR from 'swr'
 
+export const dynamic = 'force-dynamic'
+
 interface OrderItem {
   id: string
   quantity: number

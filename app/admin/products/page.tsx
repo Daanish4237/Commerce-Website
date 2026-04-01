@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 interface Product {
   id: string
   sku: string

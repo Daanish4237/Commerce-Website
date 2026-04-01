@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import useSWR from 'swr'
 
+export const dynamic = 'force-dynamic'
+
 interface CartItem {
   id: string
   quantity: number

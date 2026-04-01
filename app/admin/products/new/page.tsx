@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
+export const dynamic = 'force-dynamic'
+
 interface Category {
   id: string
   name: string

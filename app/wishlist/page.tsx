@@ -4,6 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import useSWR from 'swr'
 
+export const dynamic = 'force-dynamic'
+
 interface WishlistItem {
   id: string
   product: { id: string; name: string; price: number | string; imageUrl: string; category: { name: string } }

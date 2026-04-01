@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import useSWR from 'swr'
 
+export const dynamic = 'force-dynamic'
+
 interface Category { id: string; name: string }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
