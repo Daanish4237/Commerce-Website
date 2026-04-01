@@ -41,6 +41,10 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="border-t pt-6 flex flex-col md:flex-row items-center justify-between gap-2" style={{ borderColor: 'rgba(201,168,76,0.15)' }}>
           <p className="text-xs text-gray-600">&copy; {new Date().getFullYear()} Soho Jewels. All rights reserved.</p>
+          <div className="flex gap-4">
+            <a href="/privacy" className="text-xs text-gray-600 hover:text-gray-400">Privacy Policy</a>
+            <a href="/terms" className="text-xs text-gray-600 hover:text-gray-400">Terms of Service</a>
+          </div>
           <p className="text-xs text-gray-700 tracking-widest uppercase">Luxury · Elegance · Craftsmanship</p>
         </div>
       </div>
