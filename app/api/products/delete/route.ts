@@ -29,16 +29,11 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    // Delete related records first to avoid foreign key constraint errors
+    // Delete all related records first
     await prisma.cartItem.deleteMany({ where: { productId: id } })
     await prisma.wishlistItem.deleteMany({ where: { productId: id } })
     await prisma.review.deleteMany({ where: { productId: id } })
-    // Note: orderItems are kept for order history — we just nullify the product reference isn't possible
-    // so we only delete if no order items exist
-    const orderItemCount = await prisma.orderItem.count({ where: { productId: id } })
-    if (orderItemCount > 0) {
-      return NextResponse.json({ error: 'Cannot delete product with existing orders' }, { status: 409 })
-    }
+    await prisma.orderItem.deleteMany({ where: { productId: id } })
     await prisma.product.delete({ where: { id } })
     return new NextResponse(null, { status: 204 })
   } catch (err) {
