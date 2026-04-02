@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   let params: Record<string, string> = {}
   try {
     const text = await req.text()
-    for (const [k, v] of new URLSearchParams(text)) {
+    for (const [k, v] of Array.from(new URLSearchParams(text).entries())) {
       params[k] = v
     }
   } catch {
