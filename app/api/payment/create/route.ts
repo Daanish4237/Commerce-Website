@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
-import Stripe from 'stripe'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
+import { createBill } from '@/lib/billplz'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,9 +31,10 @@ export async function POST(req: NextRequest) {
   if (order.userId !== session.user.id) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const baseUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
+  const collectionId = process.env.BILLPLZ_COLLECTION_ID ?? ''
 
-  // Demo mode: no Stripe key configured
-  if (!process.env.STRIPE_SECRET_KEY) {
+  // Demo mode: no Billplz credentials configured
+  if (!process.env.BILLPLZ_API_KEY || !collectionId) {
     const items = await prisma.orderItem.findMany({ where: { orderId: order.id } })
     await prisma.order.update({ where: { id: order.id }, data: { status: 'PAID' } })
     for (const item of items) {
@@ -45,31 +46,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ billUrl: `${baseUrl}/orders/success?orderId=${order.id}` })
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY)
+  const amountInSen = Math.round(Number(order.totalPrice) * 100)
 
   try {
-    const checkoutSession = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      customer_email: order.user.email,
-      line_items: order.items.map((item) => ({
-        price_data: {
-          currency: 'myr',
-          product_data: { name: item.product.name },
-          unit_amount: Math.round(Number(item.product.price) * 100),
-        },
-        quantity: item.quantity,
-      })),
-      success_url: `${baseUrl}/orders/success?orderId=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/cart`,
-      metadata: { orderId: order.id },
+    const bill = await createBill({
+      collectionId,
+      email: order.user.email,
+      name: order.user.name,
+      amount: amountInSen,
+      description: `Soho Jewels Order #${order.id}`,
+      redirectUrl: `${baseUrl}/orders/success?orderId=${order.id}`,
+      callbackUrl: `${baseUrl}/api/payment/callback`,
+      reference1: order.id,
     })
 
-    await prisma.order.update({ where: { id: order.id }, data: { billplzId: checkoutSession.id } })
+    await prisma.order.update({ where: { id: order.id }, data: { billplzId: bill.id } })
 
-    return NextResponse.json({ billUrl: checkoutSession.url })
+    return NextResponse.json({ billUrl: bill.url })
   } catch (err) {
-    console.error('Stripe error:', err)
+    console.error('Billplz error:', err)
     return NextResponse.json({ error: 'Payment gateway error' }, { status: 502 })
   }
 }
