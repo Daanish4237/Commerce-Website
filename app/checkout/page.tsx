@@ -63,7 +63,8 @@ export default function CheckoutPage() {
         body: JSON.stringify({ orderId }),
       })
       if (!payRes.ok) {
-        setError('Payment gateway error. Please try again.')
+        const payData = await payRes.json()
+        setError(`Payment error: ${payData.detail ?? payData.error ?? 'Please try again.'}`)
         setLoading(false)
         return
       }

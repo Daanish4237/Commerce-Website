@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       email: order.user.email,
       name: order.user.name,
       amount: amountInSen,
-      description: `Soho Jewels Order #${order.id}`,
+      description: `Soho Jewels Order #${order.id.slice(0, 8)}`,
       redirectUrl: `${baseUrl}/orders/success?orderId=${order.id}`,
       callbackUrl: `${baseUrl}/api/payment/callback`,
       reference1: order.id,
@@ -65,6 +65,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ billUrl: bill.url })
   } catch (err) {
     console.error('Billplz error:', err)
-    return NextResponse.json({ error: 'Payment gateway error' }, { status: 502 })
+    return NextResponse.json({ error: 'Payment gateway error', detail: String(err) }, { status: 502 })
   }
 }

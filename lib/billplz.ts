@@ -36,7 +36,9 @@ export async function createBill(params: {
   })
 
   if (!res.ok) {
-    throw new Error(`Billplz API error: ${res.status}`)
+    const errText = await res.text()
+    console.error('Billplz error response:', errText)
+    throw new Error(`Billplz API error: ${res.status} - ${errText}`)
   }
 
   const data = await res.json() as { id: string; url: string }
