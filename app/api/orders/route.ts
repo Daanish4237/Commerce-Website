@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
           price: item.product.price,
         })),
       },
-    } as never,
+    },
     include: { items: true },
   })
 

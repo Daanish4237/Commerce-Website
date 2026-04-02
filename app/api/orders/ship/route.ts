@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { requireAuth } from '@/lib/auth'
 import { createShipment } from '@/lib/easyparcel'
+import { OrderStatus } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
@@ -94,11 +95,11 @@ export async function POST(req: NextRequest) {
   await prisma.order.update({
     where: { id: order.id },
     data: {
-      status: 'SHIPPED' as never,
+      status: OrderStatus.SHIPPED,
       trackingNumber,
       courierName,
       shippedAt: new Date(),
-    } as never,
+    },
   })
 
   return NextResponse.json({ trackingNumber, courierName, labelUrl })
