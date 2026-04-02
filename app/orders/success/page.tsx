@@ -27,18 +27,17 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 function OrderSuccessContent() {
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
-  const sessionId = searchParams.get('session_id')
 
-  // Confirm Stripe payment on page load
+  // Confirm payment status on page load (Billplz marks PAID via callback)
   useEffect(() => {
     if (orderId) {
       fetch('/api/payment/confirm', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId, sessionId }),
+        body: JSON.stringify({ orderId }),
       })
     }
-  }, [orderId, sessionId])
+  }, [orderId])
 
   const { data: orders, isLoading } = useSWR<Order[]>(orderId ? '/api/orders' : null, fetcher)
   const order = orders?.find((o) => o.id === orderId)
